@@ -1,0 +1,37 @@
+---
+title: "Week1"
+output: pdf_document
+---
+
+## R basics
+
+Now that we are set up with R and RStudio, we want to cover some of the very basics of R data manipulation, though we will not have comprehensive coverage of the R syntax. 
+
+## Getting tables into R
+
+The beginning of a "real data analysis" usually starts with getting a table of data loaded into R. The original data might be stored in an Microsoft Excel spreadsheet. There is luckily an easy way to export data from Excel such that it can be read by other software. Go to File > Save As..., and then choose Format: Comma Separated Values (csv). Excel will give a warning then that only a single sheet of data will be exported into the CSV file.
+
+## Mammal sleep data
+
+Let's start here with a CSV file of mammalian sleep data. This data is already bundled up as msleep [1] in the ggplot2 package, but here we want to first show how to read in the data from CSV format.
+
+```{r}
+setwd("C:/Study/eDx/Genomicsclass/edX_Courses")
+tab <- read.csv("Data/msleep_ggplot2.csv")
+
+# Two useful things to know are: what does the top of the dataframe 
+# look like, and what are the dimensions of the dataframe?
+head(tab)
+dim(tab)
+```
+
+## Accessing Columns
+
+We can get a column of data from a dataframe by typing the name of the dataframe, then the `$` symbol, then the name of the column with no spaces in between. First ask what the column names are using `colnames(tab)`, and then extract one of the columns. The column will be returned as a vector of numbers. Try using autocompletion on the column name using the TAB key on your keyboard. Type the name of the dataframe, then the `$` symbol, then the first few letters of the column, then hit TAB. This will autocomplete the name until the end of the name, or until the next character which would determine which column you are referring to. In RStudio, a popup window will show you the possible column names that match the first few letters you wrote.
+
+```{r}
+colnames(tab)
+
+# How many hours of total sleep are there for the first animal in the table?
+tab[1, "sleep_total"]
+```
