@@ -35,3 +35,109 @@ colnames(tab)
 # How many hours of total sleep are there for the first animal in the table?
 tab[1, "sleep_total"]
 ```
+
+## Create and manipulate vectors with $c()$
+
+Vectors can be combined using the `c` function. For example, we can add a final number, 1000, to the sleep totals:
+```{r}
+c(tab$sleep_total, 1000)
+
+# Plot the data
+plot(tab$brainwt, tab$sleep_total)
+
+# with a logarithmic scale x-axis:
+plot(tab$brainwt, tab$sleep_total, log = "x")
+
+# The summary function gives the summary statistics of a set of values.
+# What is the 3rd quartile of the total sleep of all the animals?
+summary(tab$sleep_total)
+```
+
+## Subsetting/Indexing
+
+There are a number of ways to subset a dataframe or a vector. We can use numbers to indicate the rows we want, or a logical vector which is as long as the number of rows of the dataframe, or as long as the vector. We use the square brackets [] and inside give the rows and columns we want to index, separated by a comma. If we leave out the number before or after the comma, it means, give us all the rows or all the columns.
+
+```{r}
+# Subsetting a dataframe to the first two rows:
+tab[c(1, 2), ]
+# The rows where the total sleep is greater than 18 hours:
+tab[ tab$sleep_total > 18, ]
+# The first two elements can be subset like so:
+tab$sleep_total[ c(1,2) ]
+# What is the average total sleep for the animals with total sleep 
+# greater than 18 hours?
+mean(tab$sleep_total[tab$sleep_total > 18])
+```
+
+### which()
+
+The function which() gives us the numeric index that satisfies a logical question:
+
+```{r}
+tab$sleep_total[which(tab$sleep_total > 18)][1]
+
+# What is the row number of the animal which has more than 18 hours of 
+# total sleep and less than 3 hours of REM sleep?
+which(tab$sleep_total > 18 & tab$sleep_rem < 3)
+
+# sort() simply gives back the list of numeric values after sorting them:
+sort(tab$sleep_total)
+
+# order()
+# What is the index of the animal (so the row number) with the least 
+# total sleep?
+order(tab$sleep_total)[1]
+
+# rank()
+rank(c(1,2,2,3))
+# What's the rank of the animal in the first row of the table in terms 
+# of total sleep?
+rank(tab$sleep_total)
+
+# The match() function in R is useful to find the index of the first 
+# match of a vector in a second vector. We can give match() a number 
+# of queries at once:
+match(c("Cow","Owl monkey","Cheetah"), tab$name)
+
+# reorder the tab dataframe to give the rows for Cow, Owl monkey and 
+# Cheetah, using the vector returned by match() as a row index:
+idx = match(c("Cow","Owl monkey","Cheetah"), tab$name)
+tab[idx, ]
+
+# What is the row number for "Cotton rat" in the tab dataframe?
+match("Cotton rat", tab$name)
+
+# Factors
+# The levels of a factor and their order can be seen using the levels()
+# function. Let's see an example:
+vec = c("red","blue","red","green","green","yellow","orange")
+fac <- factor(vec)
+fac
+levels(fac)
+
+# reorder the levels
+fac2 = factor(vec, levels=c("blue","green","yellow","orange","red"))
+fac2
+levels(fac2)
+
+# table()
+# How many rodents (Rodentia) are in the table?
+table(tab$order)
+
+# split() is a function which takes a vector and splits it into a list, 
+# by grouping the vector according to a factor. 
+s <- split(tab$sleep_total, tab$order)
+# What is the mean hours of total sleep of the rodents?
+mean(s[["Rodentia"]])
+
+# lapply() and sapply() are useful functions for applying a function
+# repeatedly to a vector or list. lapply() returns a list, while sapply()
+# tries to "simplify", returning a vector if possible (if there is only 
+# one element returned by the function for each element of the input.
+lapply(s, mean)
+sapply(s, mean)
+tapply(tab$sleep_total, tab$order, mean)
+
+# What is the standard deviation of total hours of sleep for the 
+# Primates Order?
+tapply(tab$sleep_total, tab$order, sd)
