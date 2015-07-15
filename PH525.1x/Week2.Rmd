@@ -1,0 +1,130 @@
+---
+title: "Introduction to random variables"
+
+output: pdf_document
+---
+
+## Introduction 
+
+```{r, echo=FALSE}
+set.seed(1)
+```
+
+This course introduces the statistical concepts necessary to understand p-values and confidence intervals. These terms are ubiquitous in the life science literature. Let's look at [this paper](http://diabetes.diabetesjournals.org/content/53/suppl_3/S215.full]) as an example. 
+
+Note that the abstract has this statement: 
+
+> "Body weight was higher in mice fed the high-fat diet already after the first week, due to higher dietary intake in combination with lower metabolic efficiency". 
+
+To back this up they provide this in the results section:
+
+> "Already during the first week after introduction of high-fat diet, body weight increased significantly more in the high-fat diet–fed mice (+1.6 ± 0.1 g) than in the normal diet–fed mice (+0.2 $\pm$ 0.1 g; P < 0.001)."
+
+What does P < 0.001 mean? What are $\pm$ included? In this class we will learn what this mean and learn to compute these values in R. The first step is to understand what is a random variable. To understand this, we will use data from a mouse database (provided by Karen Svenson via Gary Churchill and Dan Gatti and Partially funded by P50 GM070683.) We will import the data with R and explain random variables and null distributions using R programming.
+
+```{r, eval=FALSE}
+setwd("C:/Study/eDx/Genomicsclass/edX_Courses")
+dat <- read.csv("Data/femaleMiceWeights.csv")
+dat
+```
+
+An alternative is to read the file from the `dagdata` package:
+
+```{r}
+# library(devtools)
+# install_github("genomicsclass/dagdata")
+dir <- system.file(package="dagdata")
+list.files(dir)
+list.files(file.path(dir,"extdata"))
+filename <- file.path(dir,"extdata/femaleMiceWeights.csv")
+dat <- read.csv(filename)
+```
+
+## Our first look at data
+
+We are interested in determining if following a given diet makes mice heavier after several weeks. This data was produced by ordering 24 mice from Jackson Lab, randomly assigning either chow or high fat (hf) diet. Then after several weeks we weighed each mice and obtained this data:
+
+```{r}
+dat
+```
+
+So are the hf mice heavier? Note that mouse 24 at 20.73 grams is one the lightest mice while 21 at 34.02 is one of the heaviest. Both are on the hf diet. Just from looking at the data we see there is *variability*. Claims such as the one above usually refer to the averages. So let's look at the average of each group:
+
+```{r}
+control <- dat[1:12, 2]
+treatment <- dat[13:24, 2]
+print(mean(control))
+print(mean(treatment))
+diff <- mean(treatment) - mean(control)
+print(diff)
+```
+
+So the hf diet mice are about 10% heavier. Are we done? Why do we need p-values and confidence intervals? The reason is that these averages are random variables. They can take many values. 
+
+Note that we repeat the experiment, we will obtain 24 new mice from Jackson Laboratories and when we randomly assign them to each diet we will get a different mean. Every time we repeat this experiment we get a different value. We call this type quantity a *random variable*. 
+
+<a name="random_variable"></a>
+
+## Random variables
+
+Let's see  what a random variable is. Imagine we actually have the weight of all control female mice and can load them up to R. In Statistics we refer to this as *the population*. These are all the control mice available from which we sampled 24. Note that in practice we do not have access to the population. We have a special data set that we're using here to illustrate concepts. 
+
+Read in the data, either from your home directory or from dagdata:
+
+```{r}
+library(downloader)
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/femaleControlsPopulation.csv"
+filename <- "femaleControlsPopulation.csv"
+if (!file.exists(filename)) download(url, destfile = filename)
+population <- read.csv(filename)
+```
+
+Now let's sample 12 mice three times and see how the average changes.
+
+```{r}
+control <- sample(population[, 1], 12)
+mean(control)
+
+control <- sample(population[, 1], 12)
+mean(control)
+
+control <- sample(population[, 1], 12)
+mean(control)
+```
+
+Note how the average varies. We can continue to do this over and over again and start learning something about the...
+
+<a name="null_distribution"></a>
+
+## Null distribution
+
+Now let's go back to our average difference of `diff`. As scientists we need to be skeptics. How do we know that this `diff` is due to the diet. What happens if we give all 24 the same diet, can we see a difference this big? Statisticians refereed to this scenario as the *null hypothesis*. The name null is used to remind us that we are acting as skeptics: we give credence to the possibility that there is no difference. 
+
+Because we have access to the population, we can actually observe as many values as we want to of the difference of the averages when the diet has no effect. We can do this by sampling 24 control mice, giving them the same diet, and then recording the difference in mean between to randomly split groups. Here is the code:
+
+```{r}
+### 12 control mice
+control <- sample(population[, 1], 12)
+### another 12 control mice that we act as if they were not
+treatment <- sample(population[, 1], 12)
+print(mean(treatment) - mean(control))
+```
+
+Now let's do it 10,000 times. We will use a for-loop, an operation that lets us automatize this
+
+```{r}
+n <- 10000
+null <- vector("numeric", n)
+for (i in 1:n){
+  control <- sample(population[, 1], 12)
+  treatment <- sample(population[, 1], 12)
+  null[i] <- mean(treatment) - mean(control)
+}
+```
+
+The values in `null` form what we call the *null distribution*. 
+
+so what percent are bigger than `diff`?
+```{r}
+mean(null > diff)
+```
